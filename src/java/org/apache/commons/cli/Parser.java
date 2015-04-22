@@ -27,12 +27,6 @@ import java.util.*;
  */
 public abstract class Parser implements CommandLineParser {
 
-	/** commandline instance */
-	private CommandLine cmd;
-
-	/** list of required options strings */
-	private List requiredOptions;
-
 	/**
 	 * <p>Subclasses must implement this method to reduce
 	 * the <code>arguments</code> that have been passed to the parse
@@ -127,12 +121,15 @@ public abstract class Parser implements CommandLineParser {
 		for (Object opt : options.helpOptions())
 			((Option)opt).clearValues();
 
-		requiredOptions = options.getRequiredOptions(); // TODO eliminate field
-		cmd = new CommandLine();
+		/** list of required options strings */
+		List requiredOptions = options.getRequiredOptions(); // TODO eliminate field
+		
+		/** commandline instance */
+		CommandLine cmd = new CommandLine();
 
 		String[] tokens = arguments == null ? new String[0] : flatten(options, arguments, stopAtNonOption);
 		int current = 0;
-		
+
 		// process each flattened token
 		while (current < tokens.length) {
 			String t = tokens[current++];
@@ -142,7 +139,7 @@ public abstract class Parser implements CommandLineParser {
 				break;
 
 			// the value is a single dash
-			if ("-".equals(t)) {
+			if (t.equals("-")) {
 				cmd.addArg(t);
 				continue;
 			}
@@ -176,8 +173,8 @@ public abstract class Parser implements CommandLineParser {
 						requiredOptions.remove(group);
 					group.setSelected(opt);
 				}
-				
-				
+
+
 				// if the option takes an argument value
 				if (opt.hasArg()) {
 					// <processArgs>
@@ -210,7 +207,7 @@ public abstract class Parser implements CommandLineParser {
 				cmd.addOption(opt);
 				// <ProcessOptions>
 				continue;
-			} 
+			}
 
 			// the value is an argument
 			cmd.addArg(t);
@@ -224,13 +221,12 @@ public abstract class Parser implements CommandLineParser {
 			String t = tokens[current++];
 
 			// ensure only one double-dash is added
-			if ("--" == t)
-				continue;
-			cmd.addArg(t);
+			if (!t.equals("--"))
+				cmd.addArg(t);
 		}
 
 		// <processProperties>
-		if (properties != null) {
+		if (properties != null)
 			for (String option : properties.stringPropertyNames()) {
 				if (cmd.hasOption(option))
 					continue;
@@ -252,7 +248,6 @@ public abstract class Parser implements CommandLineParser {
 					break;
 				cmd.addOption(opt);
 			}
-		}
 		// </processProperties>
 		// <checkRequiredOptions>
 		// if there are required options that have not been processsed
