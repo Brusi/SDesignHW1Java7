@@ -1,0 +1,5 @@
+"Yes".toLowerCase().matches("yes|no|1");
+"nO".toLowerCase().matches("yes|no|1");
+"1".toLowerCase().matches("yes|no|1");
+
+(""+true).matches("(true|false)")
