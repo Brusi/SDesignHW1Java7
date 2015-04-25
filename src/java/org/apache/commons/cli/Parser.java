@@ -52,8 +52,7 @@ public abstract class Parser implements CommandLineParser {
 	 * arguments.
 	 */
 	public CommandLine parse(Options options, String[] arguments)
-			throws ParseException
-	{
+			throws ParseException {
 		return parse(options, arguments, null, false);
 	}
 
@@ -70,9 +69,7 @@ public abstract class Parser implements CommandLineParser {
 	 * while parsing the command line tokens.
 	 */
 	public CommandLine parse(Options options, String[] arguments,
-			Properties properties)
-					throws ParseException
-	{
+			Properties properties) throws ParseException {
 		return parse(options, arguments, properties, false);
 	}
 
@@ -92,9 +89,7 @@ public abstract class Parser implements CommandLineParser {
 	 * arguments.
 	 */
 	public CommandLine parse(Options options, String[] arguments,
-			boolean stopAtNonOption)
-					throws ParseException
-	{
+			boolean stopAtNonOption) throws ParseException {
 		return parse(options, arguments, null, stopAtNonOption);
 	}
 
@@ -103,7 +98,7 @@ public abstract class Parser implements CommandLineParser {
 	 * properties.
 	 *
 	 * @param options the specified Options
-	 * @param arguments the command line arguments
+	 * @param args the command line arguments
 	 * @param properties command line option name-value pairs
 	 * @param stopAtNonOption stop parsing the arguments when the first
 	 * non option is encountered.
@@ -113,7 +108,7 @@ public abstract class Parser implements CommandLineParser {
 	 * @throws ParseException if there are any problems encountered
 	 * while parsing the command line tokens.
 	 */
-	public CommandLine parse(Options options, String[] arguments,
+	public CommandLine parse(Options options, String[] args,
 			Properties properties, boolean stopAtNonOption)
 					throws ParseException
 	{
@@ -127,7 +122,7 @@ public abstract class Parser implements CommandLineParser {
 		/** commandline instance */
 		CommandLine cmd = new CommandLine();
 
-		String[] tokens = arguments == null ? new String[0] : flatten(options, arguments, stopAtNonOption);
+		String[] tokens = args == null ? new String[0] : flatten(options, args, stopAtNonOption);
 		int current = 0;
 
 		// process each flattened token
@@ -146,15 +141,25 @@ public abstract class Parser implements CommandLineParser {
 
 			// the value is an option
 			if (t.startsWith("-")) {
-				if (stopAtNonOption && !options.hasOption(t)) {
-					cmd.addArg(t);
-					break;
-				}
-				// <ProcessOptions>
-				// if there is no option throw an UnrecognisedOptionException
-				if (!options.hasOption(t))
+				
+				if (!options.hasOption(t)) {
+					if (stopAtNonOption) {
+						cmd.addArg(t);
+						break;
+					}
 					throw new UnrecognizedOptionException(
 							"Unrecognized option: " + t);
+				}
+				
+//				if (stopAtNonOption && !options.hasOption(t)) {
+//					cmd.addArg(t);
+//					break;
+//				}
+//				// <ProcessOptions>
+//				// if there is no option throw an UnrecognisedOptionException
+//				if (!options.hasOption(t))
+//					throw new UnrecognizedOptionException(
+//							"Unrecognized option: " + t);
 
 				// get the option represented by arg
 				Option opt = options.getOption(t);
@@ -217,13 +222,16 @@ public abstract class Parser implements CommandLineParser {
 		}
 
 		// eat the remaining tokens
-		while (current < tokens.length) {
-			String t = tokens[current++];
-
-			// ensure only one double-dash is added
-			if (!t.equals("--"))
-				cmd.addArg(t);
-		}
+		while (current < tokens.length) //{
+			if (!tokens[current].equals("--"))
+				cmd.addArg(tokens[current++]);
+			
+//			String t = tokens[current++];
+//
+//			// ensure only one double-dash is added
+//			if (!t.equals("--"))
+//				cmd.addArg(t);
+//		}
 
 		// <processProperties>
 		if (properties != null)
@@ -246,22 +254,23 @@ public abstract class Parser implements CommandLineParser {
 					// if the value is not yes, true or 1 then don't add the
 					// option to the CommandLine
 					break;
+				
 				cmd.addOption(opt);
 			}
 		// </processProperties>
 		// <checkRequiredOptions>
 		// if there are required options that have not been processsed
-		if (requiredOptions.size() > 0) {
-			String buff = requiredOptions.size() == 1 ? "Missing required option: "
-					: "Missing required options: ";
+		if (requiredOptions.isEmpty())
+			return cmd;
+		
+		String buff = requiredOptions.size() == 1 ? "Missing required option: "
+				: "Missing required options: ";
 
-			// loop through the required options
-			for (Object option : requiredOptions)
-				buff += option;
+		// loop through the required options
+		for (Object option : requiredOptions)
+			buff += option;
 
-			throw new MissingOptionException(buff.toString());
-		}
+		throw new MissingOptionException(buff);
 		// </checkRequiredOptions>
-		return cmd;
 	}
 }
