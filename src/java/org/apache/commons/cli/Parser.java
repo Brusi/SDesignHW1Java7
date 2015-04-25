@@ -117,8 +117,8 @@ public abstract class Parser implements CommandLineParser {
 			((Option)opt).clearValues();
 
 		/** list of required options strings */
-		List requiredOptions = options.getRequiredOptions(); // TODO eliminate field
-		
+		List requiredOptions = options.getRequiredOptions();
+
 		/** commandline instance */
 		CommandLine cmd = new CommandLine();
 
@@ -141,7 +141,7 @@ public abstract class Parser implements CommandLineParser {
 
 			// the value is an option
 			if (t.startsWith("-")) {
-				
+
 				if (!options.hasOption(t)) {
 					if (stopAtNonOption) {
 						cmd.addArg(t);
@@ -150,16 +150,6 @@ public abstract class Parser implements CommandLineParser {
 					throw new UnrecognizedOptionException(
 							"Unrecognized option: " + t);
 				}
-				
-//				if (stopAtNonOption && !options.hasOption(t)) {
-//					cmd.addArg(t);
-//					break;
-//				}
-//				// <ProcessOptions>
-//				// if there is no option throw an UnrecognisedOptionException
-//				if (!options.hasOption(t))
-//					throw new UnrecognizedOptionException(
-//							"Unrecognized option: " + t);
 
 				// get the option represented by arg
 				Option opt = options.getOption(t);
@@ -195,7 +185,6 @@ public abstract class Parser implements CommandLineParser {
 						try {
 							opt.addValueForProcessing(Util
 									.stripLeadingAndTrailingQuotes(str));
-							// TODO: is that ok?
 						} catch (RuntimeException exp) {
 							break;
 						}
@@ -222,16 +211,9 @@ public abstract class Parser implements CommandLineParser {
 		}
 
 		// eat the remaining tokens
-		while (current < tokens.length) //{
+		while (current < tokens.length)
 			if (!tokens[current].equals("--"))
 				cmd.addArg(tokens[current++]);
-			
-//			String t = tokens[current++];
-//
-//			// ensure only one double-dash is added
-//			if (!t.equals("--"))
-//				cmd.addArg(t);
-//		}
 
 		// <processProperties>
 		if (properties != null)
@@ -254,7 +236,7 @@ public abstract class Parser implements CommandLineParser {
 					// if the value is not yes, true or 1 then don't add the
 					// option to the CommandLine
 					break;
-				
+
 				cmd.addOption(opt);
 			}
 		// </processProperties>
@@ -262,7 +244,7 @@ public abstract class Parser implements CommandLineParser {
 		// if there are required options that have not been processsed
 		if (requiredOptions.isEmpty())
 			return cmd;
-		
+
 		String buff = requiredOptions.size() == 1 ? "Missing required option: "
 				: "Missing required options: ";
 
